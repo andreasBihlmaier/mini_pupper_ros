@@ -27,7 +27,8 @@ joint_group_effort_controller:
     command_interfaces:
     # https://github.com/rohitmenon86/ros2_controllers on galactic possible only with that fork
     # https://github.com/ros-controls/ros2_controllers/pull/225
-      - effort
+    #XXX  - effort
+      - position
     state_interfaces:
       - position
       - velocity

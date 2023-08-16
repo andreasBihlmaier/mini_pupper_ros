@@ -1485,69 +1485,81 @@
     <axis
       xyz="0 0 0" />
   </joint>
-  <ros2_control name="GazeboSystem" type="system">
+  <ros2_control name="joint_controller" type="system">
     <hardware>
-      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+      <plugin>ign_ros2_control/IgnitionSystem</plugin>
     </hardware>
     <joint name="base_lf1">
-      <command_interface name="effort"/> 
+      <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
+      <state_interface name="effort"/>
     </joint>
     <joint name="lf1_lf2">
-      <command_interface name="effort"/> 
+      <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
+      <state_interface name="effort"/>
     </joint>
     <joint name="lf2_lf3">
-      <command_interface name="effort"/> 
+      <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
+      <state_interface name="effort"/>
     </joint>
     <joint name="base_rf1">
-      <command_interface name="effort"/> 
+      <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
+      <state_interface name="effort"/>
     </joint>
     <joint name="rf1_rf2">
-      <command_interface name="effort"/> 
+      <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
+      <state_interface name="effort"/>
     </joint>
     <joint name="rf2_rf3">
-      <command_interface name="effort"/> 
+      <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
+      <state_interface name="effort"/>
     </joint>
     <joint name="base_lb1">
-      <command_interface name="effort"/> 
+      <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
+      <state_interface name="effort"/>
     </joint>
     <joint name="lb1_lb2">
-      <command_interface name="effort"/> 
+      <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
+      <state_interface name="effort"/>
     </joint>
     <joint name="lb2_lb3">
-      <command_interface name="effort"/> 
+      <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
+      <state_interface name="effort"/>
     </joint>
     <joint name="base_rb1">
-      <command_interface name="effort"/> 
+      <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
+      <state_interface name="effort"/>
     </joint>
     <joint name="rb1_rb2">
-      <command_interface name="effort"/> 
+      <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
+      <state_interface name="effort"/>
     </joint>
     <joint name="rb2_rb3">
-      <command_interface name="effort"/> 
+      <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
+      <state_interface name="effort"/>
     </joint>
   </ros2_control>
   <!-- coloring Gazebo model -->
@@ -1599,6 +1611,12 @@
     <maxVel>0.0</maxVel>
     <minDepth>0.001</minDepth>
     <material>Gazebo/FlatBlack</material>
+    <sensor name='lf_sensor_contact' type='contact'>
+      <contact>
+          <!-- TODO workaround for https://github.com/gazebosim/sdformat/issues/333#issuecomment-1679652150 -->
+          <collision>lf3_fixed_joint_lump__lffoot_collision_1</collision>
+      </contact>
+    </sensor>
   </gazebo>
   <gazebo reference="rf1">
     <kp>1000000.0</kp>
@@ -1641,6 +1659,12 @@
     <maxVel>0.0</maxVel>
     <minDepth>0.001</minDepth>
     <material>Gazebo/FlatBlack</material>
+    <sensor name='rf_sensor_contact' type='contact'>
+      <contact>
+          <!-- TODO workaround for https://github.com/gazebosim/sdformat/issues/333#issuecomment-1679652150 -->
+          <collision>rf3_fixed_joint_lump__rffoot_collision_1</collision>
+      </contact>
+    </sensor>
   </gazebo>
   <gazebo reference="lb1">
     <kp>1000000.0</kp>
@@ -1683,6 +1707,12 @@
     <maxVel>0.0</maxVel>
     <minDepth>0.001</minDepth>
     <material>Gazebo/FlatBlack</material>
+    <sensor name='lb_sensor_contact' type='contact'>
+      <contact>
+          <!-- TODO workaround for https://github.com/gazebosim/sdformat/issues/333#issuecomment-1679652150 -->
+          <collision>lb3_fixed_joint_lump__lbfoot_collision_1</collision>
+      </contact>
+    </sensor>
   </gazebo>
   <gazebo reference="rb1">
     <kp>1000000.0</kp>
@@ -1725,16 +1755,24 @@
     <maxVel>0.0</maxVel>
     <minDepth>0.001</minDepth>
     <material>Gazebo/FlatBlack</material>
+    <sensor name='rb_sensor_contact' type='contact'>
+      <contact>
+          <!-- TODO workaround for https://github.com/gazebosim/sdformat/issues/333#issuecomment-1679652150 -->
+          <collision>rb3_fixed_joint_lump__rbfoot_collision_1</collision>
+      </contact>
+    </sensor>
   </gazebo>
-  
+
   <gazebo reference="lidar_link">
     <material>Gazebo/FlatBlack</material>
-    <sensor type="ray" name="lidar">
+    <sensor type="gpu_lidar" name="gpu_lidar">
+      <topic>lidar</topic>
+      <ignition_frame_id>lidar_link</ignition_frame_id>
       <always_on>true</always_on>
       <update_rate>30</update_rate>
       <pose>0 0 0 0 0 0</pose>
       <visualize>false</visualize>
-      <ray>
+      <lidar>
         <scan>
           <horizontal>
             <samples>1040</samples>
@@ -1753,34 +1791,25 @@
           <mean>0.0</mean>
           <stddev>0.004</stddev>
         </noise>
-      </ray>
-      <plugin name="gazebo_ros_lidar_controller" filename="libgazebo_ros_ray_sensor.so">
-        <ros>
-          <argument>~/out:=/scan</argument>
-        </ros>
-        <output_type>sensor_msgs/LaserScan</output_type>
-        <frame_name>lidar_link</frame_name>
-        <!--min_intensity>100.0</min_intensity-->
-      </plugin>
+      </lidar>
     </sensor>
   </gazebo>
-  
+
   <gazebo>
-    <plugin filename="libgazebo_ros_p3d.so" name="p3d_base_controller">
-      <ros>
-          <argument>odom:=odom/ground_truth</argument>
-      </ros>
-      <body_name>base_link</body_name>
-      <frame_name>world</frame_name>
-      <update_rate>10.0</update_rate>
-      <xyz_offset>0 0 0</xyz_offset>
-      <rpy_offset>0 0 0</rpy_offset>
-      <gaussian_noise>0.01</gaussian_noise>
-    </plugin>
+        <plugin
+        filename="ignition-gazebo-odometry-publisher-system"
+        name="ignition::gazebo::systems::OdometryPublisher">
+        <odom_publish_frequency>10</odom_publish_frequency>
+        <odom_topic>odom/ground_truth</odom_topic>
+        <odom_frame>world</odom_frame>
+        <robot_base_frame>base_link</robot_base_frame>
+      </plugin>
   </gazebo>
   
   <gazebo>
-    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+    <plugin
+      filename="ign_ros2_control-system"
+      name="ign_ros2_control::IgnitionROS2ControlPlugin">
       <parameters>$(find mini_pupper_description)/config/ros_control/mini_pupper_controller.yaml</parameters>
     </plugin>
   </gazebo>
@@ -1797,20 +1826,18 @@
     <parent link="base_link"/>
     <child link="imu_link"/>
   </joint>
+  <gazebo reference="imu_joint">
+    <preserveFixedJoint>true</preserveFixedJoint>
+  </gazebo>
 
   <gazebo reference="imu_link">
     <sensor name="imu_controller" type="imu">
+      <topic>imu/data</topic>
       <always_on>true</always_on>
       <update_rate>50</update_rate>
-      <plugin name="gazebo_ros_imu_sensor" filename="libgazebo_ros_imu_sensor.so">
-          <ros>
-              <namespace>/imu</namespace>
-              <argument>~/out:=data</argument>
-          </ros>
-      </plugin>
     </sensor>
   </gazebo>
-  
+
   <!--xacro:sensor_d435 parent="base_link">
   <origin xyz="0.08 0.0 0.07" rpy="0 0 0" />
   </xacro:sensor_d435-->

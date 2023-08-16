@@ -30,6 +30,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
 
 
 def generate_launch_description():
@@ -125,7 +126,7 @@ def generate_launch_description():
             "gazebo": sim,
             "rviz": rviz,
             "joint_hardware_connected": joint_hardware_connected,
-            "publish_foot_contacts": "true",
+            "publish_foot_contacts": "false",
             "close_loop_odom": "true",
             "joint_controller_topic": "joint_group_effort_controller/joint_trajectory",
             "joints_map_path": joints_config_path,
@@ -145,10 +146,25 @@ def generate_launch_description():
             "lite": lite,
             "world_init_x": world_init_x,
             "world_init_y": world_init_y,
+            "world_init_z": "0.2",
             "world_init_heading": world_init_heading,
             "gui": gui,
             "close_loop_odom": "true",
+            "description_path": description_path,
+            "links_map_path": links_config_path,
         }.items(),
+    )
+
+    start_gz_bridge_cmd = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        # TODO other sensors
+        arguments=['lidar@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
+                   'lidar/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked',
+                   'odom/ground_truth@nav_msgs/msg/Odometry[gz.msgs.Odometry',
+                   'imu/data@sensor_msgs/msg/Imu[gz.msgs.IMU',
+                   ],
+        output='screen',
     )
 
     return LaunchDescription([
@@ -164,5 +180,6 @@ def generate_launch_description():
         declare_sim,
         declare_joint_hardware_connected,
         mini_pupper_bringup_launch,
-        champ_gazebo_launch
+        champ_gazebo_launch,
+        start_gz_bridge_cmd,
     ])
